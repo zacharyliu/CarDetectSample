@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent(this, CarSoundDetectionService.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 		
-		Log.d("Message", "Activity created");
+		log("Activity created");
 	}
 
 	@Override
@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
 			unbindService(mConnection);
 			mBound = false;
 		}
+		log("Stopped activity");
 	}
 	
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -61,8 +62,8 @@ public class MainActivity extends Activity {
 		public void onServiceConnected(ComponentName name, IBinder binder) {
 			mBound = true;
 			mBinder = (CarSoundDetectionBinder) binder;
-			Log.d("Message", "Service bound");
-			//mBinder.start();
+			log("Service bound");
+			mBinder.start(MainActivity.this, callback);
 		}
 
 		@Override
@@ -75,13 +76,18 @@ public class MainActivity extends Activity {
 	private CarSoundDetectionReceiver callback = new CarSoundDetectionReceiver() {
 
 		@Override
-		public void onResult(List<Integer> result) {
-			int total = result.get(0) + result.get(1);
+		public void onResult(int[] result) {
+			log("Got result");
+			int total = result[0] + result[1];
 			int progress = (int) (total / 2.0) * resultBar.getMax();
 			resultBar.setProgress(progress);
-			resultText.setText(total);
+			resultText.setText(Integer.toString(total));
 		}
 		
 	};
+	
+	public static void log(String message) {
+		Log.d("Message!", message);
+	}
 
 }
