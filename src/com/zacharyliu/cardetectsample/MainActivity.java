@@ -1,6 +1,6 @@
 package com.zacharyliu.cardetectsample;
 
-import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -11,13 +11,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionReceiver;
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionService;
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionService.CarSoundDetectionBinder;
+import com.zacharyliu.carsounddetectionlibrary.analyzer.Result;
 
 public class MainActivity extends Activity {
 	boolean mBound = false;
@@ -47,13 +47,31 @@ public class MainActivity extends Activity {
 	}
 	
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onDestroy() {
+		super.onDestroy();
 		if (mBound) {
 			unbindService(mConnection);
 			mBound = false;
 		}
-		log("Stopped activity");
+		log("Destroyed activity");
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mBound) {
+			mBinder.start(this, callback);
+		}
+		log("Resumed processing");
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if (mBound) {
+			mBinder.stop();
+		}
+		log("Stopped processing");
 	}
 	
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -76,12 +94,12 @@ public class MainActivity extends Activity {
 	private CarSoundDetectionReceiver callback = new CarSoundDetectionReceiver() {
 
 		@Override
-		public void onResult(int[] result) {
+		public void onResult(Result result) {
 			log("Got result");
-			int total = result[0] + result[1];
-			int progress = (int) (total / 2.0) * resultBar.getMax();
-			resultBar.setProgress(progress);
-			resultText.setText(Integer.toString(total));
+			Double percent = result.getResult();
+			resultBar.setProgress((int) (percent * resultBar.getMax()));
+			String text = String.format(Locale.getDefault(), "%1$,.2f", percent);
+			resultText.setText(text);
 		}
 		
 	};
