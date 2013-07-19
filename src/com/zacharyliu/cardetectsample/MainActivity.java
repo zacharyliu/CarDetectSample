@@ -24,6 +24,7 @@ import com.androidplot.xy.XYPlot;
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionReceiver;
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionService;
 import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionService.CarSoundDetectionBinder;
+import com.zacharyliu.carsounddetectionlibrary.Constants;
 import com.zacharyliu.carsounddetectionlibrary.analyzer.FeatureVector;
 
 public class MainActivity extends Activity {
@@ -32,7 +33,7 @@ public class MainActivity extends Activity {
 	private TextView resultText;
 	private ProgressBar resultBar;
 	private XYPlot graph;
-	private final int NUM_SERIES = 14;
+	private final int NUM_SERIES = Constants.NEURON_COUNTS[0];
 	private List<SimpleXYSeries> graphSeries = new ArrayList<SimpleXYSeries>(NUM_SERIES);
 
 	@Override
