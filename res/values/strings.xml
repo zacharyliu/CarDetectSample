@@ -4,5 +4,17 @@
     <string name="app_name">Car Detect Sample</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string-array name="features">
+        <item>Ratio 1</item>
+        <item>Ratio 2</item>
+        <item>Ratio 3</item>
+        <item>Ratio 4</item>
+        <item>Ratio 5</item>
+        <item>Ratio 6</item>
+        <item>Zero-Crossing Rate</item>
+        <item>Standard Deviation</item>
+        <item>Rolloff Frequency</item>
+        <item>Magnitude</item>
+    </string-array>
 
 </resources>
