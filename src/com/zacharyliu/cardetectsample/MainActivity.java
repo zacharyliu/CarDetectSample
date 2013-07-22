@@ -1,7 +1,5 @@
 package com.zacharyliu.cardetectsample;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
@@ -15,12 +13,14 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
@@ -32,8 +32,9 @@ import com.zacharyliu.carsounddetectionlibrary.CarSoundDetectionService.CarSound
 import com.zacharyliu.carsounddetectionlibrary.Constants;
 import com.zacharyliu.carsounddetectionlibrary.analyzer.FeatureVector;
 
-public class MainActivity extends Activity implements OnItemSelectedListener {
-	boolean mBound = false;
+public class MainActivity extends Activity implements OnItemSelectedListener, OnClickListener {
+	private boolean mBound = false;
+	private boolean mStarted = false;
 	protected CarSoundDetectionBinder mBinder;
 	private TextView resultText;
 	private ProgressBar resultBar;
@@ -42,6 +43,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 	private SimpleXYSeries graphSeries;
 	private Spinner spinner;
 	private int currentDisplayPos = 0;
+	private ToggleButton toggle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +68,26 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 		spinner.setAdapter(adapter);
 		spinner.setOnItemSelectedListener(this);
 		
+		toggle = (ToggleButton) findViewById(R.id.toggle);
+		toggle.setOnClickListener(this);
+		
 		log("Activity created");
+	}
+	
+	protected void startService() {
+		if (mBound && !mStarted) {
+			mBinder.start(this, callback);
+			toggle.setChecked(true);
+			mStarted = true;
+		}
+	}
+	
+	protected void stopService() {
+		if (mBound && mStarted) {
+			mBinder.stop();
+			toggle.setChecked(false);
+			mStarted = false;
+		}
 	}
 	
 	private void newSeries() {
@@ -100,18 +121,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (mBound) {
-			mBinder.start(this, callback);
-		}
+		startService();
 		log("Resumed processing");
 	}
 	
 	@Override
 	protected void onStop() {
 		super.onStop();
-		if (mBound) {
-			mBinder.stop();
-		}
+		stopService();
 		log("Stopped processing");
 	}
 	
@@ -122,7 +139,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 			mBound = true;
 			mBinder = (CarSoundDetectionBinder) binder;
 			log("Service bound");
-			mBinder.start(MainActivity.this, callback);
+			startService();
 		}
 
 		@Override
@@ -164,8 +181,16 @@ public class MainActivity extends Activity implements OnItemSelectedListener {
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onClick(View v) {
+		if (mStarted) {
+			stopService();
+		} else {
+			startService();
+		}
 	}
 
 }
