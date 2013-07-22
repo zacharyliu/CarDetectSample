@@ -1,5 +1,8 @@
 package com.zacharyliu.cardetectsample;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Locale;
 
 import android.app.Activity;
@@ -9,6 +12,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
@@ -20,7 +24,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
+import au.com.bytecode.opencsv.CSVWriter;
 
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
@@ -44,6 +50,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener, On
 	private Spinner spinner;
 	private int currentDisplayPos = 0;
 	private ToggleButton toggle;
+	private CSVWriter writer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +77,16 @@ public class MainActivity extends Activity implements OnItemSelectedListener, On
 		
 		toggle = (ToggleButton) findViewById(R.id.toggle);
 		toggle.setOnClickListener(this);
+		
+		File sdCard = Environment.getExternalStorageDirectory();
+		try {
+			String filename = sdCard.getAbsolutePath() + "/CarDetect_" + Long.toString(System.currentTimeMillis()) + ".csv";
+			writer = new CSVWriter(new FileWriter(filename));
+			Toast.makeText(this, "Logging to: " + filename, Toast.LENGTH_SHORT).show();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		log("Activity created");
 	}
@@ -114,6 +131,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener, On
 		if (mBound) {
 			unbindService(mConnection);
 			mBound = false;
+		}
+		try {
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		log("Destroyed activity");
 	}
@@ -163,6 +186,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener, On
 			}
 			graphSeries.addLast(null, vector.get(currentDisplayPos));
 			graph.redraw();
+			
+			writer.writeNext(vector.toStringArray());
 		}
 		
 	};
